@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_09_21_033247) do
+ActiveRecord::Schema[7.1].define(version: 2024_09_21_043321) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -18,12 +18,13 @@ ActiveRecord::Schema[7.1].define(version: 2024_09_21_033247) do
     t.string "name"
     t.string "code"
     t.bigint "merchant_id", null: false
-    t.bigint "invoice_id", null: false
+    t.bigint "invoice_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "dollars_off"
-    t.decimal "percentage_off"
+    t.decimal "percentage_off", precision: 5, scale: 2
     t.integer "status", default: 0
+    t.index ["code"], name: "index_coupons_on_code", unique: true
     t.index ["invoice_id"], name: "index_coupons_on_invoice_id"
     t.index ["merchant_id"], name: "index_coupons_on_merchant_id"
   end

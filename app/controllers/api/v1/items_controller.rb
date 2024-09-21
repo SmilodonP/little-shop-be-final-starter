@@ -19,7 +19,7 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(item), status: :created
   end
 
-  def update
+  def update 
     item = Item.find(params[:id])
     if !item_params[:merchant_id].nil?
       merchant = Merchant.find(item_params[:merchant_id])

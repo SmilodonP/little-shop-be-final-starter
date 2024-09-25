@@ -11,10 +11,8 @@ class Api::V1::MerchantsController < ApplicationController
 
     include_count = params[:count].present? && params[:count] == "true"
     render json: MerchantSerializer.new(merchants, { params: { count: include_count }})
-
-    # ADD - Update the merchants index endpoint to include a count of coupons for each merchant and a count of invoices with coupons applied for each merchant.
   end
-
+  
   def show
     merchant = Merchant.find(params[:id])
     render json: MerchantSerializer.new(merchant)

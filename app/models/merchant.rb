@@ -7,6 +7,17 @@ class Merchant < ApplicationRecord
   # has_many :invoice_items, through: :invoices
   # has_many :transactions, through: :invoices
 
+  def coupon_count
+    coupons.count
+  end
+
+  def invoices_with_coupons_count
+    count = invoices.joins(:coupon) 
+                    .distinct
+                    .count(:id) 
+    count
+  end
+
   def self.sorted_by_creation
     Merchant.order("created_at DESC")
   end

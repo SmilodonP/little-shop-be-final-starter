@@ -26,4 +26,11 @@ class Coupon < ApplicationRecord
       errors.add(:base, "Merchant already has 5 active coupons")
     end
   end
+  
+  def self.sort_by_status(coupons, status = nil)
+    return coupons if status.nil?
+    coupons.sort_by do |coupon|
+      [coupon.status == status ? 0 : 1, coupon.created_at]
+    end
+  end
 end

@@ -55,6 +55,36 @@ describe Merchant, type: :model do
       expect(merchant2.item_count).to eq(4)
     end
 
+    it "#coupon_count should return the count of coupons for a merchant" do
+      merchant = create(:merchant)
+      merchant2 = create(:merchant)
+      create_list(:coupon, 4, merchant_id: merchant.id)
+      create_list(:coupon, 3, merchant_id: merchant2.id)
+
+      expect(merchant.coupon_count).to eq(4)
+      expect(merchant2.coupon_count).to eq(3)
+    end
+
+    it "#invoices_with_coupons_count should return the count of invoices with coupons for a merchant" do
+      merchant = create(:merchant)
+      merchant2 = create(:merchant)
+
+      invoice1 = create(:invoice, merchant: merchant)
+      create(:coupon, invoice: invoice1) 
+    
+      invoice2 = create(:invoice, merchant: merchant)
+      create(:coupon, invoice: invoice2) 
+
+      invoice3 = create(:invoice, merchant: merchant)
+      create(:coupon, invoice: invoice3) 
+    
+      invoice4 = create(:invoice, merchant: merchant2)
+      create(:coupon, invoice: invoice4) 
+    # binding.pry
+      expect(merchant.invoices_with_coupons_count).to eq(3)
+      expect(merchant2.invoices_with_coupons_count).to eq(1)
+    end
+
     it "#distinct_customers should return all customers for a merchant" do
       merchant1 = create(:merchant)
       customer1 = create(:customer)

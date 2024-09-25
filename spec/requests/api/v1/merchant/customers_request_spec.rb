@@ -9,7 +9,6 @@ RSpec.describe "Merchant customers endpoints" do
     merchant2 = create(:merchant)
     create_list(:invoice, 3, merchant_id: merchant1.id, customer_id: customer1.id)
     create_list(:invoice, 2, merchant_id: merchant1.id, customer_id: customer2.id)
-    
     create_list(:invoice, 2, merchant_id: merchant2.id, customer_id: customer3.id)
 
     get "/api/v1/merchants/#{merchant1.id}/customers"
@@ -22,11 +21,14 @@ RSpec.describe "Merchant customers endpoints" do
     expect(json[:data][0][:type]).to eq("customer")
     expect(json[:data][0][:attributes][:first_name]).to eq(customer1.first_name)
     expect(json[:data][0][:attributes][:last_name]).to eq(customer1.last_name)
-
+    
     expect(json[:data][1][:id]).to eq(customer2.id.to_s)
     expect(json[:data][1][:type]).to eq("customer")
     expect(json[:data][1][:attributes][:first_name]).to eq(customer2.first_name)
     expect(json[:data][1][:attributes][:last_name]).to eq(customer2.last_name)
+
+    expect(json[:data][0][:id]).to_not eq(customer3.id.to_s)
+    expect(json[:data][1][:id]).to_not eq(customer3.id.to_s)
   end
 
   it "should return 404 and error message when merchant is not found" do

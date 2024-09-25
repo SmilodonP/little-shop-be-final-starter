@@ -3,8 +3,20 @@ class Merchant < ApplicationRecord
   has_many :items, dependent: :destroy
   has_many :invoices, dependent: :destroy
   has_many :customers, through: :invoices
+  has_many :coupons, dependent: :destroy
   # has_many :invoice_items, through: :invoices
   # has_many :transactions, through: :invoices
+
+  def coupon_count
+    coupons.count
+  end
+
+  def invoices_with_coupons_count
+    count = invoices.joins(:coupon) 
+                    .distinct
+                    .count(:id) 
+    count
+  end
 
   def self.sorted_by_creation
     Merchant.order("created_at DESC")
@@ -19,8 +31,7 @@ class Merchant < ApplicationRecord
   end
 
   def distinct_customers
-    # self.customers.distinct # This is possible due to the additional association on line 5
-    
+    self.customers.distinct
     # SQL option: SELECT DISTINCT * FROM customers JOIN invoices ON invoices.customer_id = customers.id 
     #             JOIN merchants ON merchants.id = invoices.customer_id 
     #             WHERE merchants.id = #{self.id}"

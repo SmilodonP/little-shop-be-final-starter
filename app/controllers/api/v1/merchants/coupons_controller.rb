@@ -1,50 +1,47 @@
 class Api::V1::Merchants::CouponsController < ApplicationController
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found
+  rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
+  rescue_from StandardError, with: :internal_server_error
+
   def index
     merchant = Merchant.find(params[:merchant_id])
     coupons = merchant.coupons
-    render json: CouponSerializer.new(coupons)
+    render json: CouponSerializer.new(coupons), status: :ok
   end
 
   def show
-    coupon = Coupon.find(params[:id])
-    render json: CouponSerializer.new(coupon)
-    # Returns a specific coupon and shows a count of how many times that coupon has been used.
+    coupon = find_coupon
+    render json: CouponSerializer.new(coupon), status: :ok
   end
 
   def create
     merchant = Merchant.find(params[:merchant_id])
-  
-    if merchant.coupons.where(status: 0).count >= 5
-      render json: { error: 'Merchant already has 5 active coupons' }, status: :bad_request
-    elsif Coupon.exists?(code: params[:code])
-      render json: { error: 'Coupon code must be unique' }, status: :bad_request
+    coupon = merchant.coupons.new(coupon_params)
+
+    if coupon.save
+      render json: CouponSerializer.new(coupon), status: :created
     else
-      coupon = merchant.coupons.create!(coupon_params)
-      render json: CouponSerializer.new(coupon)
+      render json: ErrorSerializer.format_errors(coupon.errors.full_messages), status: :unprocessable_entity
     end
   end
 
   def activate
-    coupon = Coupon.find(params[:id])
-    if coupon.activated?
-      render json: { error: 'Coupon is already activated' }, status: :bad_request
-    else
-      coupon.update!(status: 0)
-      render json: CouponSerializer.new(coupon)
-    end
+    coupon = find_coupon
+    coupon.update!(status: :activated)
+    render json: CouponSerializer.new(coupon), status: :ok
   end
   
   def deactivate
-    coupon = Coupon.find(params[:id])
-    if coupon.deactivated?
-      render json: { error: 'Coupon is already deactivated' }, status: :bad_request
-    else
-      coupon.update!(status: 1)
-      render json: CouponSerializer.new(coupon)
-    end
+    coupon = find_coupon
+    coupon.update!(status: :deactivated)
+    render json: CouponSerializer.new(coupon), status: :ok
   end
 
   private
+
+  def find_coupon
+    Coupon.find(params[:id])
+  end
 
   def coupon_params
     params.permit(:name, :code, :dollars_off, :percentage_off, :merchant_id, :invoice_id)

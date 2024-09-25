@@ -52,7 +52,7 @@ RSpec.describe "Merchant Coupon Endpoints" do
         expect(coupon[:data][:attributes][:code]).to_not eq(coupon3.code)
         expect(coupon[:data][:attributes][:status]).to_not eq(coupon4.status)
       end
-      it "handles invalid "
+      # it "handles invalid query params"
     end
     context "Merchant Coupon #Create" do
       it "can create a new coupon" do
@@ -85,9 +85,9 @@ RSpec.describe "Merchant Coupon Endpoints" do
             merchant_id: merchant6.id
           }
 
-          expect(response).to have_http_status(:bad_request)
+          expect(response).to have_http_status(:unprocessable_entity)
           error_response = JSON.parse(response.body, symbolize_names: true)
-          expect(error_response[:error]).to eq('Coupon code must be unique')
+          expect(error_response[:errors]).to include('Code has already been taken')
         end
 
           it "handles missing discount param inputs" do
@@ -98,7 +98,7 @@ RSpec.describe "Merchant Coupon Endpoints" do
             }
           expect(response).to have_http_status(:unprocessable_entity)
           error_response = JSON.parse(response.body, symbolize_names: true)
-          expect(error_response[:errors].first).to eq("Validation failed: A coupon must have a discount")
+          expect(error_response[:errors].first).to eq("A coupon must have a discount")
           end
 
           it "handles the presence of both discount params" do
@@ -111,7 +111,7 @@ RSpec.describe "Merchant Coupon Endpoints" do
               }
             expect(response).to have_http_status(:unprocessable_entity)
             error_response = JSON.parse(response.body, symbolize_names: true)
-            expect(error_response[:errors].first).to eq("Validation failed: Enter either a dollar or a percentage discount, not both")             
+            expect(error_response[:errors].first).to eq("Enter either a dollar or a percentage discount, not both")             
           end
 
           it "handles a merchant already having 5 active coupons" do
@@ -125,9 +125,9 @@ RSpec.describe "Merchant Coupon Endpoints" do
               merchant_id: merchant3.id
             }
 
-            expect(response).to have_http_status(:bad_request)
+            expect(response).to have_http_status(:unprocessable_entity)
             error_response = JSON.parse(response.body, symbolize_names: true)
-            expect(error_response[:error]).to eq('Merchant already has 5 active coupons')
+            expect(error_response[:errors]).to include('Merchant already has 5 active coupons')
           end
 
           it "can still create deactivated coupons if merchant has 4 activated coupons and one deactivated coupon" do
@@ -144,12 +144,26 @@ RSpec.describe "Merchant Coupon Endpoints" do
 
             get "/api/v1/merchants/#{merchant3.id}/coupons"
             updated_coupons = JSON.parse(response.body, symbolize_names: true)
-            # binding.pry
             expect(updated_coupons[:data].count).to eq(6)
 
             active_coupons = updated_coupons[:data].select { |coupon| coupon[:attributes][:status] == 'activated' }
             expect(active_coupons.count).to eq(5)
           end
+      end
+    end
+    context "Merchant Coupon #Activate & #Deactivate" do
+      it "can deactivate and activate coupons" do
+        get "/api/v1/merchants/#{merchant1.id}/coupons/#{coupon1.id}"
+        coupon = JSON.parse(response.body, symbolize_names: true)
+        expect(coupon[:data][:attributes][:status]).to eq('activated')
+
+        patch "/api/v1/merchants/#{merchant1.id}/coupons/#{coupon1.id}/deactivate"       
+        updated_coupon = JSON.parse(response.body, symbolize_names: true)
+        expect(updated_coupon[:data][:attributes][:status]).to eq('deactivated')
+
+        patch "/api/v1/merchants/#{merchant1.id}/coupons/#{coupon1.id}/activate"
+        reactivated_coupon = JSON.parse(response.body, symbolize_names: true)
+        expect(reactivated_coupon[:data][:attributes][:status]).to eq('activated')
       end
     end
   end

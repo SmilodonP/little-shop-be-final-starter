@@ -4,8 +4,10 @@ class Coupon < ApplicationRecord
 
   validates_presence_of :name, :code
   validates :code, uniqueness: true
+  validates :dollars_off, numericality: { greater_than: 0 }, allow_nil: true
+  validates :percentage_off, numericality: { greater_than: 0 }, allow_nil: true
   validate :dollars_or_percentage
-  validate :merchant_has_active_coupons, on: :create
+  validate :active_coupons_limit, on: :create
 
   enum :status, { activated: 0, deactivated: 1 }, validate: true
 
@@ -19,8 +21,8 @@ class Coupon < ApplicationRecord
     end
   end
 
-  def merchant_has_active_coupons
-    if merchant.coupons.where(status: :activated).count >= 5
+  def active_coupons_limit
+    if merchant.present? && merchant.coupons.where(status: :activated).count >= 5
       errors.add(:base, "Merchant already has 5 active coupons")
     end
   end

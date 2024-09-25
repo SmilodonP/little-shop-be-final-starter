@@ -11,6 +11,8 @@ class Api::V1::MerchantsController < ApplicationController
 
     include_count = params[:count].present? && params[:count] == "true"
     render json: MerchantSerializer.new(merchants, { params: { count: include_count }})
+
+    # ADD - Update the merchants index endpoint to include a count of coupons for each merchant and a count of invoices with coupons applied for each merchant.
   end
 
   def show
@@ -19,7 +21,7 @@ class Api::V1::MerchantsController < ApplicationController
   end
 
   def create
-    merchant = Merchant.create!(merchant_params) # safe to use create! here because our exception handler will gracefully handle exception
+    merchant = Merchant.create!(merchant_params) 
     render json: MerchantSerializer.new(merchant), status: :created
   end
 

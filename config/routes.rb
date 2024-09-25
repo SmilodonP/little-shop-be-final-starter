@@ -24,7 +24,7 @@ Rails.application.routes.draw do
         resources :items, only: :index, controller: "merchants/items"
         resources :customers, only: :index, controller: "merchants/customers"
         resources :invoices, only: :index, controller: "merchants/invoices"
-        resources :coupons, except: [:edit, :destroy],  controller: "merchants/coupons"
+        resources :coupons, except: [:edit, :destroy],  controller: "merchants/coupons" do
           member do
             patch :activate
             patch :deactivate

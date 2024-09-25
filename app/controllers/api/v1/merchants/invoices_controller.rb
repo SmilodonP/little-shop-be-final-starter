@@ -7,5 +7,7 @@ class Api::V1::Merchants::InvoicesController < ApplicationController
       invoices = merchant.invoices
     end
     render json: InvoiceSerializer.new(invoices)
+
+    # ADD Return a merchant’s invoices and include the id of the coupon used (if one was used)
   end
 end
